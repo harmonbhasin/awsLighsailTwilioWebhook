@@ -10,6 +10,10 @@ WORKDIR /app
 # Copy the dependencies file to the working directory
 COPY requirements.txt .
 
+# Copy credentials into the working directory
+COPY service_account.json .
+COPY Google.py .
+
 # Install any dependencies
 RUN pip install -r requirements.txt
 

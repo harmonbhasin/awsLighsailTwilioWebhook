@@ -1,7 +1,7 @@
 {
     "flask": {
-        "image": ":twilio.responderv2.2",
-        "ports": {
+        "image": ":twilio.twilio.6",
+				"ports": {
             "5000": "HTTP"
         }
     }
