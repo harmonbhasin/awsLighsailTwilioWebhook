@@ -1,0 +1,20 @@
+#!/bin/bash
+
+##
+## ./upload docker-tag+1 container+1
+##
+
+# Step 1: Build container image
+docker build -t twilio:$1 .
+
+# Step 2: Push application container to Lighsail
+aws lightsail push-container-image --region us-east-2 --service-name twilio --label twilio --image twilio:$1
+
+# Step 3: Deploy the container
+printf '{"flask": {"image": ":twilio.twilio.%s","ports": {"5000": "HTTP"}}}' $2 > containers.json
+
+# Step 4: Deploy container 
+aws lightsail create-container-service-deployment \
+--service-name twilio \
+--containers file://containers.json \
+--public-endpoint file://public-endpoint.json
