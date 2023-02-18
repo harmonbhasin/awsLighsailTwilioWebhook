@@ -8,6 +8,7 @@ import csv
 import random
 import os
 import MySQLdb
+import openai
 
 from dotenv import load_dotenv
 from Google import Create_Service
@@ -17,8 +18,11 @@ from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 from waitress import serve
 
+#from flask_ngrok import run_with_ngrok # TESTING ONLY
 
 app = Flask(__name__)
+
+#run_with_ngrok(app) # TESTING ONLY
 
 load_dotenv()
 
@@ -28,6 +32,9 @@ def	sms():
   # Get the message from the user sent to our Twilio number
   body = request.values.get('Body', None)
   number = request.values.get('From', None)
+
+  # Import openai key
+  openai.api_key = os.getenv("OPENAI_API_KEY")
 
   print(number)
 
@@ -90,7 +97,7 @@ def	sms():
 
   sh=sa.open(client[0])
 
-  if re.search("(([1-9][0-9]*\.?[0-9]*)|(\.[0-9]+))([Ee][+-]?[0-9]+)?", body):
+  if re.search("[0-9]{2,3}", body):
     diet=sh.worksheet("BodyProgress")
     values_list = diet.col_values(1)[1:]
 
@@ -98,7 +105,8 @@ def	sms():
       diet.batch_clear(["A2:A57"])
       diet.update("A2:A57", float(body))
     else:
-      diet.update(("A"+str(len(values_list)+1)), float(body))
+      diet.update(("A"+str(len(values_list)+2)), float(body))
+
     resp.message('Are you working out today (Yes or No)?')
 
   else:   
@@ -116,7 +124,7 @@ def	sms():
       day = daily_schedule[workout_day]
       yes = "yes"
       no = "no"
-
+      assist = "help"
 
     match client_msg:
       case Response.day:
@@ -129,9 +137,16 @@ def	sms():
         resp.message("Stop lying bruh, excuses and excuses")
 
       case _:
-        resp.message("I think you missed a day on your schedule??!!! Make sure to go back and fill everything out :)") 
+        result = openai.Completion.create(
+          model="text-davinci-003",
+          prompt=body,
+          max_tokens=128,
+          temperature=0.5
+          )
+        resp.message(result.choices[0].text) 
 
   return str(resp)
 
 if __name__ == '__main__':
 	serve(app, host = '0.0.0.0', port = 5000)
+	#app.run() TESTING ONLY

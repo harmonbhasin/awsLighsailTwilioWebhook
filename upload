@@ -1,7 +1,9 @@
 #!/bin/bash
 
 ##
-## ./upload docker-tag+1 container+1
+## About: This is a script for automating the uploading of a docker image to an AWS lightsail container.
+##
+## Usage: ./upload docker-tag+1 container+1
 ##
 
 # Step 1: Build container image
